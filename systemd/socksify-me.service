@@ -7,6 +7,7 @@ Wants=firewalld.service
 Type=forking
 ExecStart=/usr/bin/socksify-me start $OPTIONS
 ExecStop=/usr/bin/socksify-me stop $OPTIONS
+SuccessExitStatus=1
 EnvironmentFile=/etc/conf.d/socksify-me
 
 [Install]
