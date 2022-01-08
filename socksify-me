@@ -66,9 +66,9 @@ case "${command}" in
     echo "ip -4 rule del fwmark 0xa table 10" >> /run/socksify-me/stop-socksify-me.sh
     echo "ip -6 rule del fwmark 0xa table 10" >> /run/socksify-me/stop-socksify-me.sh
     echo "firewall-cmd --direct --remove-rule ipv4 nat POSTROUTING 10 -o "${net_device}" -m mark --mark 0xa -j SNAT --to-source "${device_ipv4}"" >> /run/socksify-me/stop-socksify-me.sh
-    echo "ip tuntap del mode tun "${tun_device}"" >> /run/socksify-me/stop-socksify-me.sh
     echo "ip -4 route del default via "${badvpn_ipv4}" metric 6" >> /run/socksify-me/stop-socksify-me.sh
     echo "ip -6 route del default via "${badvpn_ipv6}" metric 6" >> /run/socksify-me/stop-socksify-me.sh
+    echo "ip tuntap del mode tun "${tun_device}"" >> /run/socksify-me/stop-socksify-me.sh
     chmod +x /run/socksify-me/stop-socksify-me.sh
     ;;
   stop)
