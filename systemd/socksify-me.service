@@ -1,9 +1,10 @@
 [Unit]
 Description=A simple script that socksifies your traffic
-After=network.target
+After=network.target firewalld.service
+Wants=firewalld.service
 
 [Service]
-Type=simple
+Type=forking
 ExecStart=/usr/bin/socksify-me start $OPTIONS
 ExecStop=/usr/bin/socksify-me stop $OPTIONS
 EnvironmentFile=/etc/conf.d/socksify-me
