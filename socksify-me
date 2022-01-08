@@ -1,0 +1,81 @@
+#!/bin/bash
+command="${1}"
+version="0.1"
+shift
+
+while getopts ":u:d:p:v:" o; do
+  case "${o}" in
+    u)
+      user="${OPTARG}"
+      ;;
+    d)
+      net_device="${OPTARG}"
+      ;;
+    p)
+      socks5_port="${OPTARG}"
+      ;;
+    *)
+      exit 1
+      ;;
+  esac
+done
+
+default_gateway_ipv4=$(ip -4 route show table main | awk '$1=="default" {print $3}')
+# TODO: Add IPv6 here
+device_ipv4=$(ip -4 addr show dev "${net_device}" | awk '$1=="inet" {match($2,/[0-9.]+/,i); print i[0]}')
+
+tun_device="tun0"
+tun_ipv4="10.0.0.1"
+tun_ipv6="fdfe:dcba:9876::1"
+badvpn_ipv4="10.0.0.2"
+badvpn_ipv6="fdfe:dcba:9876::2"
+
+case "${command}" in
+  start)
+    firewall-cmd --direct --add-rule ipv4 filter OUTPUT 10 -m owner --uid-owner "${user}" -j ACCEPT
+    firewall-cmd --direct --add-rule ipv6 filter OUTPUT 10 -m owner --uid-owner "${user}" -j ACCEPT
+    ip -4 route add default via "${default_gateway_ipv4}" table 10
+    ip -4 route flush cache
+    ip -6 route flush cache
+    firewall-cmd --direct --add-rule ipv4 mangle OUTPUT 10 -m owner --uid-owner "${user}" -j MARK --set-mark 0xa
+    firewall-cmd --direct --add-rule ipv6 mangle OUTPUT 10 -m owner --uid-owner "${user}" -j MARK --set-mark 0xa
+    ip -4 rule add fwmark 0xa table 10
+    ip -6 rule add fwmark 0xa table 10
+    # TODO: Add IPv6 here
+    firewall-cmd --direct --add-rule ipv4 nat POSTROUTING 10 -o "${net_device}" -m mark --mark 0xa -j SNAT --to-source "${device_ipv4}"
+
+    ip tuntap add mode tun "${tun_device}"
+    ip -4 addr replace "${tun_ipv4}/24" dev "${tun_device}"
+    ip -6 addr replace "${tun_ipv6}/126" dev "${tun_device}"
+    ip link set "${tun_device}" up
+
+    {
+      badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${badvpn_ipv4}" --netif-ip6addr "${badvpn_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
+    } > /dev/null
+
+    ip -4 route add default via "${badvpn_ipv4}" metric 6
+    ip -6 route add default via "${badvpn_ipv6}" metric 6
+
+    mkdir -p /run/socksify-me
+    echo "killall badvpn-tun2socks" > /run/socksify-me/stop-socksify-me.sh
+    echo "firewall-cmd --direct --remove-rule ipv4 filter OUTPUT 10 -m owner --uid-owner "${user}" -j ACCEPT" >> /run/socksify-me/stop-socksify-me.sh
+    echo "firewall-cmd --direct --remove-rule ipv6 filter OUTPUT 10 -m owner --uid-owner "${user}" -j ACCEPT" >> /run/socksify-me/stop-socksify-me.sh
+    echo "ip -4 route del default via "${default_gateway_ipv4}" table 10" >> /run/socksify-me/stop-socksify-me.sh
+    echo "firewall-cmd --direct --remove-rule ipv4 mangle OUTPUT 10 -m owner --uid-owner "${user}" -j MARK --set-mark 0xa" >> /run/socksify-me/stop-socksify-me.sh
+    echo "firewall-cmd --direct --remove-rule ipv6 mangle OUTPUT 10 -m owner --uid-owner "${user}" -j MARK --set-mark 0xa" >> /run/socksify-me/stop-socksify-me.sh
+    echo "ip -4 rule del fwmark 0xa table 10" >> /run/socksify-me/stop-socksify-me.sh
+    echo "ip -6 rule del fwmark 0xa table 10" >> /run/socksify-me/stop-socksify-me.sh
+    echo "firewall-cmd --direct --remove-rule ipv4 nat POSTROUTING 10 -o "${net_device}" -m mark --mark 0xa -j SNAT --to-source "${device_ipv4}"" >> /run/socksify-me/stop-socksify-me.sh
+    echo "ip tuntap del mode tun "${tun_device}"" >> /run/socksify-me/stop-socksify-me.sh
+    echo "ip -4 route del default via "${badvpn_ipv4}" metric 6" >> /run/socksify-me/stop-socksify-me.sh
+    echo "ip -6 route del default via "${badvpn_ipv6}" metric 6" >> /run/socksify-me/stop-socksify-me.sh
+    chmod +x /run/socksify-me/stop-socksify-me.sh
+    ;;
+  stop)
+    /run/socksify-me/stop-socksify-me.sh
+    ;;
+  *)
+    exit 1
+    ;;
+esac
+
