@@ -1,7 +1,6 @@
 [Unit]
 Description=A simple script that socksifies your traffic
-After=network.target firewalld.service
-Wants=firewalld.service
+After=network.target
 
 [Service]
 Type=forking
