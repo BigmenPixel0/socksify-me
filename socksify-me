@@ -1,6 +1,6 @@
 #!/bin/bash
 command="${1}"
-version="0.1.2"
+version="0.2"
 shift
 
 while getopts ":p:4:" o; do
@@ -30,6 +30,10 @@ badvpn_ipv6="fdfe:dcba:9876::2"
 
 case "${command}" in
   start)
+    killall badvpn-tun2socks
+    ip -4 route del "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
+    ip tuntap del mode tun "${tun_device}"
+
     ip tuntap add mode tun "${tun_device}"
     ip -4 addr replace "${tun_ipv4}/24" dev "${tun_device}"
     ip -6 addr replace "${tun_ipv6}/126" dev "${tun_device}"
