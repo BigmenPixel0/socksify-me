@@ -20,7 +20,7 @@ while getopts ":p:4:" o; do
 done
 
 # TODO: Add IPv6 here
-default_gateway_ipv4=$(ip -4 route show table main | awk '$1=="default" {print $3}')
+default_gateway_ipv4=$(ip -4 route show table main | awk '$1=="default" {print $3}' | grep 192)
 
 tun_device="tun0"
 tun_ipv4="10.0.0.1"
