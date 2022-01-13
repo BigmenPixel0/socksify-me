@@ -11,12 +11,14 @@ Usage: socksify-me start|stop [options]
 
 Required options:
 
-  --server-ipv4         IPv4 address of the server to which the socks5 client connects
-  --server-ipv6         IPv6 address of the server to which the socks5 client connects
-  --socks5-port         Local socks5 port
-  --net-device          Your network device
+  --server-ipv4		IPv4 address of the server to which the socks5 client connects (conflicts: --uid)
+  --server-ipv6         IPv6 address of the server to which the socks5 client connects (conflicts: --uid)
+  --uid			ID of the user who is running the socks5 client (conflicts: --server-ipv4 and --server-ipv6)
+  --socks5-port		Local socks5 port
+  --net-device		Your network device
 
 EOF
+}
 
 if [[ "${command}" =~ (start|stop)$ ]]; then
   shift
@@ -38,6 +40,18 @@ while [ -n "${1}" ]; do
     --server-ipv6)
       if [ -n "${2}" ]; then
         server_ipv6="${2}"
+        shift
+        shift
+      else
+        help
+        exit 1
+      fi
+      ;;
+
+
+    --uid)
+      if [ -n "${2}" ]; then
+        uid="${2}"
         shift
         shift
       else
@@ -68,6 +82,11 @@ while [ -n "${1}" ]; do
       fi
       ;;
 
+    --version)
+      echo "socksify-me ${version}"
+      exit 0
+      ;;
+
     --help)
       help
       exit 0
@@ -79,6 +98,24 @@ while [ -n "${1}" ]; do
       ;;
   esac
 done
+
+if [[ -n "${server_ipv4}" || "${server_ipv6}" ]]; then
+  if [[ -n "${uid}" ]]; then
+    help
+    exit 1
+  else
+    exclude_method="ip"
+  fi
+fi
+
+if [[ -n "${uid}" ]]; then
+  if [[ -n "${server_ipv4}" || "${server_ipv6}" ]]; then
+    help
+    exit 1
+  else
+    exclude_method="uid"
+  fi
+fi
 
 if [[ -n "${net_device}" ]]; then
   default_gateway_ipv4=$(ip -4 route show dev "${net_device}" table main | awk '$1=="default" {print $3}')
@@ -93,6 +130,16 @@ badvpn_ipv6="fdfe:dcba:9876::2"
 
 case "${command}" in
   start)
+    mkdir -p /run/socksify-me
+    echo "default_gateway_ipv4=${default_gateway_ipv4}" > /run/socksify-me/env
+    echo "default_gateway_ipv6=${default_gateway_ipv6}" >> /run/socksify-me/env
+    echo "exclude_method=${exclude_method}" >> /run/socksify-me/env
+    echo "net_device=${net_device}" >> /run/socksify-me/env
+    echo "socks5_port=${socks5_port}" >>/run/socksify-me/env
+    echo "uid=${uid}" >> /run/socksify-me/env
+    echo "server_ipv4=${server_ipv4}" >> /run/socksify-me/env
+    echo "server_ipv6=${server_ipv6}" >> /run/socksify-me/env
+
     ip tuntap add mode tun "${tun_device}"
     ip -4 addr replace "${tun_ipv4}/24" dev "${tun_device}"
     ip -6 addr replace "${tun_ipv6}/126" dev "${tun_device}"
@@ -102,20 +149,46 @@ case "${command}" in
       badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${badvpn_ipv4}" --netif-ip6addr "${badvpn_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
     } > /dev/null
 
-    ip -4 route add "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
-    ip -6 route add "${server_ipv6}" via "${default_gateway_ipv6}" metric 5
+    if [[ "${exclude_method}" -eq ip ]]; then
+      ip -4 route add "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
+      ip -6 route add "${server_ipv6}" via "${default_gateway_ipv6}" metric 5
+    fi
+
+    if [[ "${exclude_method}" -eq uid ]]; then
+      ip -4 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv4}"
+      ip -6 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
+      sysctl -w net.ipv4.conf."${net_device}".rp_filter=2
+      ip -4 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+      ip -6 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+    fi
+
     ip -4 route add default via "${badvpn_ipv4}" metric 6
     ip -6 route add default via "${badvpn_ipv6}" metric 6
     ;;
 
   stop)
+    source /run/socksify-me/env
+
     killall badvpn-tun2socks
-    ip -4 route del "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
-    ip -6 route del "${server_ipv6}" via "${default_gateway_ipv6}" metric 5
+
+    if [[ "${exclude_method}" -eq ip ]]; then
+      ip -4 route del "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
+      ip -6 route del "${server_ipv6}" via "${default_gateway_ipv6}" metric 5
+    fi
+
+    if [[ "${exclude_method}" -eq uid ]]; then
+      ip -4 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv4}"
+      ip -6 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
+      ip -4 rule del uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+      ip -6 rule del uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+    fi
+
     ip tuntap del mode tun "${tun_device}"
+
     ;;
 
   *)
+    help
     exit 1
     ;;
 esac
