@@ -12,7 +12,9 @@ Usage: socksify-me start|stop [options]
 Required options:
 
   --server-ipv4         IPv4 address of the server to which the socks5 client connects
+  --server-ipv6         IPv6 address of the server to which the socks5 client connects
   --socks5-port         Local socks5 port
+  --net-device          Your network device
 
 EOF
 
@@ -33,6 +35,17 @@ while [ -n "${1}" ]; do
       fi
       ;;
 
+    --server-ipv6)
+      if [ -n "${2}" ]; then
+        server_ipv6="${2}"
+        shift
+        shift
+      else
+        help
+        exit 1
+      fi
+      ;;
+
     --socks5-port)
       if [ -n "${2}" ]; then
         socks5_port="${2}"
@@ -43,11 +56,34 @@ while [ -n "${1}" ]; do
         exit 1
       fi
       ;;
+
+    --net-device)
+      if [ -n "${2}" ]; then
+        net_device="${2}"
+        shift
+        shift
+      else
+        help
+        exit 1
+      fi
+      ;;
+
+    --help)
+      help
+      exit 0
+      ;;
+
+    *)
+      help
+      exit 1
+      ;;
   esac
 done
 
-# TODO: Add IPv6 here
-default_gateway_ipv4=$(ip -4 route show table main | awk '$1=="default" {print $3}' | grep 192)
+if [[ -n "${net_device}" ]]; then
+  default_gateway_ipv4=$(ip -4 route show dev "${net_device}" table main | awk '$1=="default" {print $3}')
+  default_gateway_ipv6=$(ip -6 route show dev "${net_device}" table main | awk '$1=="default" {print $3}')
+fi
 
 tun_device="tun0"
 tun_ipv4="10.0.0.1"
@@ -57,10 +93,6 @@ badvpn_ipv6="fdfe:dcba:9876::2"
 
 case "${command}" in
   start)
-    killall badvpn-tun2socks
-    ip -4 route del "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
-    ip tuntap del mode tun "${tun_device}"
-
     ip tuntap add mode tun "${tun_device}"
     ip -4 addr replace "${tun_ipv4}/24" dev "${tun_device}"
     ip -6 addr replace "${tun_ipv6}/126" dev "${tun_device}"
@@ -71,6 +103,7 @@ case "${command}" in
     } > /dev/null
 
     ip -4 route add "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
+    ip -6 route add "${server_ipv6}" via "${default_gateway_ipv6}" metric 5
     ip -4 route add default via "${badvpn_ipv4}" metric 6
     ip -6 route add default via "${badvpn_ipv6}" metric 6
     ;;
@@ -78,6 +111,7 @@ case "${command}" in
   stop)
     killall badvpn-tun2socks
     ip -4 route del "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
+    ip -6 route del "${server_ipv6}" via "${default_gateway_ipv6}" metric 5
     ip tuntap del mode tun "${tun_device}"
     ;;
 
