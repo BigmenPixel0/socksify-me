@@ -1,4 +1,0 @@
-# Example:
-# OPTIONS="-u shadowsocks-rust -p 1080 -d wlan0"
-
-OPTIONS="-u <user> -p <port> -d <net_device>"

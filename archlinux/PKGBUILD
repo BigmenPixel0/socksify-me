@@ -7,12 +7,9 @@ url="https://github.com/BigmenPixel0/socksify-me"
 license=('GPL3')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
 depends=("iproute2" "badvpn")
-backup=("etc/conf.d/socksify-me")
 sha512sums=('6ef3678795a693dd43ffe10bac03090f45eae3b7eb5ec5825779786ecdb0e68c1afa6a2bee099ecaa4882220b5a0ace6a94305e0493a13be7e4268a2faa6a3cd')
 
 package() {
     cd "${srcdir}/${pkgname}-${pkgver}"
     install -Dm755 ${pkgname} ${pkgdir}/usr/bin/${pkgname}
-    install -Dm644 systemd/${pkgname}.service ${pkgdir}/usr/lib/systemd/system/${pkgname}.service
-    install -Dm644 systemd/${pkgname} ${pkgdir}/etc/conf.d/${pkgname}
 }
