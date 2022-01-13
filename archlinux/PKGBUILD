@@ -1,5 +1,5 @@
 pkgname=socksify-me
-pkgver=0.2
+pkgver=0.3
 pkgrel=1
 pkgdesc="A simple script that socksifies your traffic"
 arch=('any')
@@ -7,7 +7,7 @@ url="https://github.com/BigmenPixel0/socksify-me"
 license=('GPL3')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
 depends=("iproute2" "badvpn")
-sha512sums=('6ef3678795a693dd43ffe10bac03090f45eae3b7eb5ec5825779786ecdb0e68c1afa6a2bee099ecaa4882220b5a0ace6a94305e0493a13be7e4268a2faa6a3cd')
+sha512sums=('717a89619b4a8fd1cd3c8c463b3bd1d774c22486d83342e0d9adb37c16e150141933a6378d5168fc6da09c484ca3627383c3ad2aee3ee7d96039ebdf9114dc70')
 
 package() {
     cd "${srcdir}/${pkgname}-${pkgver}"
