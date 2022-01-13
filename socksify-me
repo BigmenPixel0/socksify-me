@@ -1,6 +1,20 @@
 #!/bin/bash
+
 command="${1}"
 version="0.2"
+
+help() {
+  cat <<EOF
+socksify-me - A simple script that socksifies your traffic
+
+Usage: socksify-me start|stop [options]
+
+Required options:
+
+  --server-ipv4         IPv4 address of the server to which the socks5 client connects
+  --socks5-port         Local socks5 port
+
+EOF
 
 if [[ "${command}" =~ (start|stop)$ ]]; then
   shift
