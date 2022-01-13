@@ -1,20 +1,33 @@
 #!/bin/bash
 command="${1}"
 version="0.2"
-shift
 
-while getopts ":p:4:" o; do
-  case "${o}" in
-    4)
-      server_ipv4="${OPTARG}"
+if [[ "${command}" =~ (start|stop)$ ]]; then
+  shift
+fi
+
+while [ -n "${1}" ]; do
+  case "${1}" in
+    --server-ipv4)
+      if [ -n "${2}" ]; then
+        server_ipv4="${2}"
+        shift
+        shift
+      else
+        help
+        exit 1
+      fi
       ;;
 
-    p)
-      socks5_port="${OPTARG}"
-      ;;
-
-    *)
-      exit 1
+    --socks5-port)
+      if [ -n "${2}" ]; then
+        socks5_port="${2}"
+        shift
+        shift
+      else
+        help
+        exit 1
+      fi
       ;;
   esac
 done
