@@ -1,5 +1,12 @@
 ![socksify-me](extra/logo.png)
 
+## Features
+* Full IPv4 and IPv6 support
+* Support for exclusion by UID method
+* Support for exclusion method by server IP address
+* Easy integration with NetworkManager-dispatcher
+* Maybe more...
+
 ## **Dependencies**
 * iproute2
 * [tun2socks](https://github.com/xjasonlyu/tun2socks)
