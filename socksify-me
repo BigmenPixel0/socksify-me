@@ -125,6 +125,8 @@ fi
 tun_device="tun0"
 tun_ipv4="10.0.0.1"
 tun_ipv6="fdfe:dcba:9876::1"
+tun2socks_ipv4="10.0.0.2"
+tun2socks_ipv6="fdfe:dcba:9876::2"
 
 case "${command}" in
   start)
@@ -158,8 +160,8 @@ case "${command}" in
       ip -6 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
     fi
 
-    ip -4 route add default via "${tun_ipv4}" metric 6
-    ip -6 route add default via "${tun_ipv6}" metric 6
+    ip -4 route add default via "${tun2socks_ipv4}" metric 6
+    ip -6 route add default via "${tun2socks_ipv6}" metric 6
     ;;
 
   stop)
