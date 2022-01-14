@@ -125,8 +125,6 @@ fi
 tun_device="tun0"
 tun_ipv4="10.0.0.1"
 tun_ipv6="fdfe:dcba:9876::1"
-badvpn_ipv4="10.0.0.2"
-badvpn_ipv6="fdfe:dcba:9876::2"
 
 case "${command}" in
   start)
@@ -145,9 +143,7 @@ case "${command}" in
     ip -6 addr replace "${tun_ipv6}/126" dev "${tun_device}"
     ip link set "${tun_device}" up
 
-    {
-      badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${badvpn_ipv4}" --netif-ip6addr "${badvpn_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
-    } > /dev/null
+    tun2socks -device tun://"${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
 
     if [[ "${exclude_method}" -eq ip ]]; then
       ip -4 route add "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
@@ -162,14 +158,14 @@ case "${command}" in
       ip -6 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
     fi
 
-    ip -4 route add default via "${badvpn_ipv4}" metric 6
-    ip -6 route add default via "${badvpn_ipv6}" metric 6
+    ip -4 route add default via "${tun_ipv4}" metric 6
+    ip -6 route add default via "${tun_ipv6}" metric 6
     ;;
 
   stop)
     source /run/socksify-me/env
 
-    killall badvpn-tun2socks
+    killall tun2socks
 
     if [[ "${exclude_method}" -eq ip ]]; then
       ip -4 route del "${server_ipv4}" via "${default_gateway_ipv4}" metric 5
