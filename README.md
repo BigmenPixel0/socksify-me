@@ -7,11 +7,11 @@
 * Easy integration with NetworkManager-dispatcher
 * Maybe more...
 
-## **Dependencies**
+## Dependencies
 * iproute2
 * [tun2socks](https://github.com/xjasonlyu/tun2socks)
 
-## **Installation**
+## Installation
 If you are using ArchLinux then:
 
 ``` 
@@ -23,7 +23,7 @@ Or use your AUR helper.
 
 If you are not using ArchLinux then download the latest release and copy the script to /usr/local/bin/ and give it execute permission.
 
-## **Usage**
+## Usage
 ```
 $ socksify-me --help
 
@@ -44,7 +44,7 @@ Example:
 socksify-me --uid 43 --socks5-port 9050 --net-device wlan0
 ```
 
-## **Integration with NetworkManager-dispatcher**
+## Integration with NetworkManager-dispatcher
 If you want the script to run itself when the network is up, then:
 ```
 $ sudoedit /etc/NetworkManager/dispatcher.d/socksify-me
@@ -65,7 +65,10 @@ $ sudo chmod +x /etc/NetworkManager/dispatcher.d/socksify-me
 ```
 You need to select the `--uid` option or `--server-ipv4` and/or `--server-ipv6`
 
-## **--uid or --server-ipv4/6?**
+## --uid or --server-ipv4/6?
 The `--uid` option is more flexible because all traffic of the selected user will be excluded from the proxy (for example, so that your socks5 client can easily connect to a domain with a changing IP address). It is necessary to run the socks5 client as the selected user.
 
 The `--server-ipv4/6` option is simpler, you only need to enter the IP address of your socks5 server, but this will not work with a domain that has IP addresses that change or with TOR.
+
+## Credits
+* Thanks to [tun2socks](https://github.com/xjasonlyu/tun2socks) developers
