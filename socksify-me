@@ -142,7 +142,7 @@ case "${command}" in
 
     ip tuntap add mode tun "${tun_device}"
     ip -4 addr replace "${tun_ipv4}/24" dev "${tun_device}"
-    ip -6 addr replace "${tun_ipv6}/126" dev "${tun_device}"
+    ip -6 addr replace "${tun_ipv6}/64" dev "${tun_device}"
     ip link set "${tun_device}" up
 
     {
@@ -184,7 +184,6 @@ case "${command}" in
     fi
 
     ip tuntap del mode tun "${tun_device}"
-
     ;;
 
   *)
