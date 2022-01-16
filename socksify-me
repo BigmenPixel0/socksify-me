@@ -17,6 +17,10 @@ Required options:
   --socks5-port		Local socks5 port
   --net-device		Your network device
 
+Optional options:
+
+  --tun2socks-backend	Supported badvpn-tun2socks and tun2socks {default: tun2socks)
+
 EOF
 }
 
@@ -82,6 +86,17 @@ while [ -n "${1}" ]; do
       fi
       ;;
 
+    --tun2socks-backend)
+      if [ -n "${2}" ]; then
+        tun2socks_backend="${2}"
+        shift
+        shift
+      else
+        help
+        exit 1
+      fi
+      ;;
+
     --version)
       echo "socksify-me ${version}"
       exit 0
@@ -139,15 +154,22 @@ case "${command}" in
     echo "uid=${uid}" >> /run/socksify-me/env
     echo "server_ipv4=${server_ipv4}" >> /run/socksify-me/env
     echo "server_ipv6=${server_ipv6}" >> /run/socksify-me/env
+    echo "tun2socks_backend=${tun2socks_backend}" >> /run/socksify-me/env
 
     ip tuntap add mode tun "${tun_device}"
     ip -4 addr replace "${tun_ipv4}/24" dev "${tun_device}"
     ip -6 addr replace "${tun_ipv6}/64" dev "${tun_device}"
     ip link set "${tun_device}" up
 
-    {
-      tun2socks -device tun://"${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
-    } > /dev/null
+    if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
+      {
+        badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-ip6addr "${tun2socks_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
+      } > /dev/null
+    else
+      {
+        tun2socks -device tun://"${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
+      } > /dev/null
+    fi
 
     if [[ "${exclude_method}" = ip ]]; then
       ip -4 route add "${server_ipv4}" dev "${net_device}" via "${default_gateway_ipv4}" metric 5
@@ -169,7 +191,11 @@ case "${command}" in
   stop)
     source /run/socksify-me/env
 
-    killall tun2socks
+    if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
+      killall badvpn-tun2socks
+    else
+      killall tun2socks
+    fi
 
     if [[ "${exclude_method}" = ip ]]; then
       ip -4 route del "${server_ipv4}" dev "${net_device}" via "${default_gateway_ipv4}" metric 5
