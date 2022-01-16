@@ -19,7 +19,7 @@ Required options:
 
 Optional options:
 
-  --tun2socks-backend	Supported badvpn-tun2socks and tun2socks {default: tun2socks)
+  --tun2socks-backend	Supported badvpn-tun2socks and tun2socks (default: tun2socks)
 
 EOF
 }
