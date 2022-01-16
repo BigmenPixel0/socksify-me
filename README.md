@@ -38,6 +38,10 @@ Required options:
   --uid			ID of the user who is running the socks5 client (conflicts: --server-ipv4 and --server-ipv6)
   --socks5-port		Local socks5 port
   --net-device		Your network device
+
+Optional options:
+
+  --tun2socks-backend	Supported badvpn-tun2socks and tun2socks (default: tun2socks)
   ```
 Example:
 ```
