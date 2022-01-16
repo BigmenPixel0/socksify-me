@@ -10,6 +10,7 @@
 ## Dependencies
 * iproute2
 * [tun2socks](https://github.com/xjasonlyu/tun2socks)
+* badvpn (optional, for badvpn-tun2socks backend)
 
 ## Installation
 If you are using ArchLinux then:
