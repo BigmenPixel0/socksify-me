@@ -167,7 +167,7 @@ case "${command}" in
       } > /dev/null
     else
       {
-        tun2socks -device tun://"${tun_device}" -proxy socks5://localhost:"${socks5_port}" --interface "${tun_device}" &
+        tun2socks -device tun://"${tun_device}" -interface "${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
       } > /dev/null
     fi
 
