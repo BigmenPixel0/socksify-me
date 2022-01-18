@@ -54,7 +54,8 @@ Note: you should run `socksify-me` as root.
 If you want the script to run itself when the network is up, then:
 ```
 $ sudoedit /etc/NetworkManager/dispatcher.d/socksify-me
-
+```
+```
 #!/usr/bin/env bash
 
 interface=$1 status=$2
@@ -66,7 +67,8 @@ case $status in
     socksify-me stop
     ;;
 esac
-
+```
+```
 $ sudo chmod +x /etc/NetworkManager/dispatcher.d/socksify-me
 ```
 You need to select the `--uid` option or `--server-ipv4` and/or `--server-ipv6`.
