@@ -73,6 +73,10 @@ $ sudo chmod +x /etc/NetworkManager/dispatcher.d/socksify-me
 ```
 You need to select the `--uid` option or `--server-ipv4` and/or `--server-ipv6`.
 
+Make sure you have enabled `NetworkManager-dispatcher.service`:
+```
+$ sudo systemctl enable NetworkManager-dispatcher.service
+```
 ## --uid or --server-ipv4/6?
 The `--uid` option is more flexible because all traffic of the selected user will be excluded from the proxy (for example, so that your socks5 client can easily connect to a domain with a changing IP address). It is necessary to run the socks5 client as the selected user.
 
