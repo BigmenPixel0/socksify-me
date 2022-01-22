@@ -1,5 +1,5 @@
 pkgname=socksify-me
-pkgver=0.4
+pkgver=0.4.1
 pkgrel=1
 pkgdesc="A simple script that socksifies your traffic"
 arch=('any')
@@ -8,7 +8,7 @@ license=('GPL3')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
 depends=('iproute2' 'tun2socks')
 optdepends=('badvpn: optional badvpn-tun2socks backend support')
-sha512sums=('70b36a0ff6bd296225cd3fdfeddff2b5fb9e4bde05c618b76a18c6de829c3a067b3f6ce6b3d8251e99c33c92acfe7cbca9d352cc993c9349bd4c17c01f4b84ea')
+sha512sums=('85db61ba7aed2cc1b494bf4e8211cdf2ed7213872dd1b3393d8db8a50ad08de1d3b4530dfcfed05b027821f70a135a2044b7ae6f50b5260a187a298d186b0509')
 
 package() {
     cd ${srcdir}/${pkgname}-${pkgver}
