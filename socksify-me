@@ -130,21 +130,9 @@ while [ -n "${1}" ]; do
 done
 
 if [[ -n "${server_ipv4}" || "${server_ipv6}" ]]; then
-  if [[ -n "${uid}" ]]; then
-    help
-    exit 1
-  else
-    exclude_method="ip"
-  fi
-fi
-
-if [[ -n "${uid}" ]]; then
-  if [[ -n "${server_ipv4}" || "${server_ipv6}" ]]; then
-    help
-    exit 1
-  else
-    exclude_method="uid"
-  fi
+  exclude_method="ip"
+elif [[ -n "${uid}" ]]; then
+  exclude_method="uid"
 fi
 
 if [[ -n "${net_device}" ]]; then
