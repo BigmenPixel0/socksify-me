@@ -21,7 +21,7 @@ Optional options:
 
   --tun2socks-backend	Supported badvpn-tun2socks and tun2socks (default: tun2socks)
   --disable-ipv6	Disable IPv6 (true or false)
-
+  --expert		Run user scripts from /etc/socksify-me/expert-start and /etc/socksify-me/expert-stop (true or false)
 EOF
 }
 
@@ -95,6 +95,16 @@ while [ -n "${1}" ]; do
     --disable-ipv6)
       if [ -n "${2}" ]; then
         disable_ipv6="${2}"
+        shift 2
+      else
+        help
+        exit 1
+      fi
+      ;;
+
+    --expert)
+      if [ -n "${2}" ]; then
+        expert="${2}"
         shift 2
       else
         help
@@ -210,6 +220,10 @@ case "${command}" in
     if [[ "${disable_ipv6}" != true ]]; then
       ip -6 route add default via "${tun2socks_ipv6}" metric 6
     fi
+
+    if [[ "${expert}" = true ]]; then
+      source /etc/socksify-me/expert-start
+    fi
     ;;
 
   stop)
@@ -240,6 +254,10 @@ case "${command}" in
     fi
 
     ip tuntap del mode tun "${tun_device}"
+
+    if [[ "${expert}" = true ]]; then
+      source /etc/socksify-me/expert-stop
+    fi
     ;;
 
   *)
