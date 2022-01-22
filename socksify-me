@@ -162,6 +162,11 @@ tun2socks_ipv6="fdfe:dcba:9876::2"
 
 case "${command}" in
   start)
+    if [[ -z "${exclude_method}" || -z "${socks5_port}" || -z "${net_device}" ]]; then
+      help
+      exit 1
+    fi
+
     mkdir -p /run/socksify-me
     echo "default_gateway_ipv4=${default_gateway_ipv4}" > /run/socksify-me/env
     echo "default_gateway_ipv6=${default_gateway_ipv6}" >> /run/socksify-me/env
