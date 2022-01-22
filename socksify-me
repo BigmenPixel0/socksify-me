@@ -34,8 +34,7 @@ while [ -n "${1}" ]; do
     --server-ipv4)
       if [ -n "${2}" ]; then
         server_ipv4="${2}"
-        shift
-        shift
+        shift 2
       else
         help
         exit 1
@@ -45,8 +44,7 @@ while [ -n "${1}" ]; do
     --server-ipv6)
       if [ -n "${2}" ]; then
         server_ipv6="${2}"
-        shift
-        shift
+        shift 2
       else
         help
         exit 1
@@ -57,8 +55,7 @@ while [ -n "${1}" ]; do
     --uid)
       if [ -n "${2}" ]; then
         uid="${2}"
-        shift
-        shift
+        shift 2
       else
         help
         exit 1
@@ -68,8 +65,7 @@ while [ -n "${1}" ]; do
     --socks5-port)
       if [ -n "${2}" ]; then
         socks5_port="${2}"
-        shift
-        shift
+        shift 2
       else
         help
         exit 1
@@ -79,8 +75,7 @@ while [ -n "${1}" ]; do
     --net-device)
       if [ -n "${2}" ]; then
         net_device="${2}"
-        shift
-        shift
+        shift 2
       else
         help
         exit 1
@@ -90,8 +85,7 @@ while [ -n "${1}" ]; do
     --tun2socks-backend)
       if [ -n "${2}" ]; then
         tun2socks_backend="${2}"
-        shift
-        shift
+        shift 2
       else
         help
         exit 1
@@ -101,8 +95,7 @@ while [ -n "${1}" ]; do
     --disable-ipv6)
       if [ -n "${2}" ]; then
         disable_ipv6="${2}"
-        shift
-        shift
+        shift 2
       else
         help
         exit 1
