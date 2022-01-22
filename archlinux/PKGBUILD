@@ -1,5 +1,5 @@
 pkgname=socksify-me
-pkgver=0.3.5
+pkgver=0.4
 pkgrel=1
 pkgdesc="A simple script that socksifies your traffic"
 arch=('any')
@@ -8,10 +8,13 @@ license=('GPL3')
 source=("${pkgname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
 depends=('iproute2' 'tun2socks')
 optdepends=('badvpn: optional badvpn-tun2socks backend support')
-sha512sums=('0e2780b5aa9e8e3e7e4fa02e8ecf4169e40889cdd5536994a77a7b4db213d56db6aa0dc6ec3db4a84fab35ee1a0fc083c410949f7a1dcaada621cdf6466a9b42')
+sha512sums=('70b36a0ff6bd296225cd3fdfeddff2b5fb9e4bde05c618b76a18c6de829c3a067b3f6ce6b3d8251e99c33c92acfe7cbca9d352cc993c9349bd4c17c01f4b84ea')
 
 package() {
     cd ${srcdir}/${pkgname}-${pkgver}
     install -Dm755 ${pkgname} ${pkgdir}/usr/bin/${pkgname}
     install -Dm644 LICENSE ${pkgdir}/usr/share/licenses/${pkgname}/LICENSE
+    install -Dm644 extra/expert-start ${pkgdir}/etc/${pkgname}/expert-start
+    install -Dm644 extra/expert-stop ${pkgdir}/etc/${pkgname}/expert-stop
+
 }
