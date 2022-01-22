@@ -84,5 +84,8 @@ The `--uid` option is more flexible because all traffic of the selected user wil
 
 The `--server-ipv4/6` option is simpler, you only need to enter the IP address of your socks5 server, but this will not work with a domain that has IP addresses that change or with TOR.
 
+## --expert option
+True or false. If true, then after starting/stopping socksify-me, commands from /etc/socksify-me/expert-start and /etc/socksify-me/expert-stop files will be run.
+
 ## Credits
 * Thanks to [tun2socks](https://github.com/xjasonlyu/tun2socks) developers.
