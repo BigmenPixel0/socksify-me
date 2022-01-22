@@ -20,6 +20,7 @@ Required options:
 Optional options:
 
   --tun2socks-backend	Supported badvpn-tun2socks and tun2socks (default: tun2socks)
+  --disable-ipv6	Disable IPv6 (true or false)
 
 EOF
 }
@@ -97,6 +98,17 @@ while [ -n "${1}" ]; do
       fi
       ;;
 
+    --disable-ipv6)
+      if [ -n "${2}" ]; then
+        disable_ipv6="${2}"
+        shift
+        shift
+      else
+        help
+        exit 1
+      fi
+      ;;
+
     --version)
       echo "socksify-me ${version}"
       exit 0
@@ -134,7 +146,9 @@ fi
 
 if [[ -n "${net_device}" ]]; then
   default_gateway_ipv4=$(ip -4 route show dev "${net_device}" table main | awk '$1=="default" {print $3}')
-  default_gateway_ipv6=$(ip -6 route show dev "${net_device}" table main | awk '$1=="default" {print $3}')
+  if [[ "${disable_ipv6}" != true ]]; then
+    default_gateway_ipv6=$(ip -6 route show dev "${net_device}" table main | awk '$1=="default" {print $3}')
+  fi
 fi
 
 tun_device="tun0"
@@ -155,16 +169,25 @@ case "${command}" in
     echo "server_ipv4=${server_ipv4}" >> /run/socksify-me/env
     echo "server_ipv6=${server_ipv6}" >> /run/socksify-me/env
     echo "tun2socks_backend=${tun2socks_backend}" >> /run/socksify-me/env
+    echo "disable_ipv6=${disable_ipv6}" >> /run/socksify-me/env
 
     ip tuntap add mode tun "${tun_device}"
     ip -4 addr replace "${tun_ipv4}/24" dev "${tun_device}"
-    ip -6 addr replace "${tun_ipv6}/64" dev "${tun_device}"
+    if [[ "${disable_ipv6}" != true ]]; then
+      ip -6 addr replace "${tun_ipv6}/64" dev "${tun_device}"
+    fi
     ip link set "${tun_device}" up
 
     if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
-      {
-        badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-ip6addr "${tun2socks_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
-      } > /dev/null
+      if [[ "${disable_ipv6}" != true ]]; then
+        {
+          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-ip6addr "${tun2socks_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
+        } > /dev/null
+      else
+        {
+          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
+        } > /dev/null
+      fi
     else
       {
         tun2socks -device tun://"${tun_device}" -interface "${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
@@ -173,19 +196,27 @@ case "${command}" in
 
     if [[ "${exclude_method}" = ip ]]; then
       ip -4 route add "${server_ipv4}" dev "${net_device}" via "${default_gateway_ipv4}" metric 5
-      ip -6 route add "${server_ipv6}" dev "${net_device}" via "${default_gateway_ipv6}" metric 5
+      if [[ "${disable_ipv6}" != true ]]; then
+        ip -6 route add "${server_ipv6}" dev "${net_device}" via "${default_gateway_ipv6}" metric 5
+      fi
     fi
 
     if [[ "${exclude_method}" = uid ]]; then
       ip -4 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv4}"
-      ip -6 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
+      if [[ "${disable_ipv6}" != true ]]; then
+        ip -6 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
+      fi
       sysctl -w net.ipv4.conf."${net_device}".rp_filter=2
       ip -4 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
-      ip -6 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+      if [[ "${disable_ipv6}" != true ]]; then
+        ip -6 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+      fi
     fi
 
     ip -4 route add default via "${tun2socks_ipv4}" metric 6
-    ip -6 route add default via "${tun2socks_ipv6}" metric 6
+    if [[ "${disable_ipv6}" != true ]]; then
+      ip -6 route add default via "${tun2socks_ipv6}" metric 6
+    fi
     ;;
 
   stop)
@@ -199,14 +230,20 @@ case "${command}" in
 
     if [[ "${exclude_method}" = ip ]]; then
       ip -4 route del "${server_ipv4}" dev "${net_device}" via "${default_gateway_ipv4}" metric 5
-      ip -6 route del "${server_ipv6}" dev "${net_device}" via "${default_gateway_ipv6}" metric 5
+      if [[ "${disable_ipv6}" != true ]]; then
+        ip -6 route del "${server_ipv6}" dev "${net_device}" via "${default_gateway_ipv6}" metric 5
+      fi
     fi
 
     if [[ "${exclude_method}" = uid ]]; then
       ip -4 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv4}"
-      ip -6 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
+      if [[ "${disable_ipv6}" != true ]]; then
+        ip -6 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
+      fi
       ip -4 rule del uidrange "${uid}"-"${uid}" lookup 100"${uid}"
-      ip -6 rule del uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+      if [[ "${disable_ipv6}" != true ]]; then
+        ip -6 rule del uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+      fi
     fi
 
     ip tuntap del mode tun "${tun_device}"

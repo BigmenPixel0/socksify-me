@@ -43,6 +43,7 @@ Required options:
 Optional options:
 
   --tun2socks-backend	Supported badvpn-tun2socks and tun2socks (default: tun2socks)
+  --disable-ipv6	Disable IPv6 (true or false)
   ```
 Example:
 ```
