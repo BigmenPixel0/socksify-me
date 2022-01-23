@@ -189,14 +189,12 @@ case "${command}" in
     fi
 
     if [[ "${exclude_method}" = uid ]]; then
-      ip -4 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv4}"
-      if [[ "${disable_ipv6}" != true ]]; then
-        ip -6 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
-      fi
       sysctl -w net.ipv4.conf."${net_device}".rp_filter=2
+      ip -4 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv4}"
       ip -4 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
       if [[ "${disable_ipv6}" != true ]]; then
         ip -6 rule add uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+        ip -6 route add table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
       fi
     fi
 
@@ -244,12 +242,10 @@ case "${command}" in
 
     if [[ "${exclude_method}" = uid ]]; then
       ip -4 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv4}"
-      if [[ "${disable_ipv6}" != true ]]; then
-        ip -6 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
-      fi
       ip -4 rule del uidrange "${uid}"-"${uid}" lookup 100"${uid}"
       if [[ "${disable_ipv6}" != true ]]; then
         ip -6 rule del uidrange "${uid}"-"${uid}" lookup 100"${uid}"
+        ip -6 route del table 100"${uid}" default dev "${net_device}" via "${default_gateway_ipv6}"
       fi
     fi
 
