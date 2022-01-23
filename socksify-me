@@ -227,10 +227,7 @@ case "${command}" in
     ;;
 
   stop)
-    source /run/socksify-me/env
-    source /run/socksify-me/net_device
-    source /run/socksify-me/default_gateway_ipv4
-    source /run/socksify-me/default_gateway_ipv6
+    source /run/socksify-me/{env,net_device,default_gateway_ipv4,default_gateway_ipv6}
 
     if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
       killall badvpn-tun2socks
