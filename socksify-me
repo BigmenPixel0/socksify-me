@@ -19,7 +19,6 @@ Required options:
 
 Optional options:
 
-  --tun2socks-backend	Supported badvpn-tun2socks and tun2socks (default: tun2socks)
   --disable-ipv6	Disable IPv6 (true or false)
   --expert		Run user scripts from /etc/socksify-me/expert-start and /etc/socksify-me/expert-stop (true or false)
 EOF
@@ -75,16 +74,6 @@ while [ -n "${1}" ]; do
     --net-device)
       if [ -n "${2}" ]; then
         net_device="${2}"
-        shift 2
-      else
-        help
-        exit 1
-      fi
-      ;;
-
-    --tun2socks-backend)
-      if [ -n "${2}" ]; then
-        tun2socks_backend="${2}"
         shift 2
       else
         help
@@ -170,7 +159,6 @@ case "${command}" in
     echo "uid=${uid}" >> /run/socksify-me/env
     echo "server_ipv4=${server_ipv4}" >> /run/socksify-me/env
     echo "server_ipv6=${server_ipv6}" >> /run/socksify-me/env
-    echo "tun2socks_backend=${tun2socks_backend}" >> /run/socksify-me/env
     echo "disable_ipv6=${disable_ipv6}" >> /run/socksify-me/env
     echo "expert=${expert}" >> /run/socksify-me/env
 
@@ -203,21 +191,7 @@ case "${command}" in
       ip -6 route add default via "${tun2socks_ipv6}" metric 6
     fi
 
-    if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
-      if [[ "${disable_ipv6}" != true ]]; then
-        {
-          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-ip6addr "${tun2socks_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
-        } > /dev/null
-      else
-        {
-          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
-        } > /dev/null
-      fi
-    else
-      {
-        tun2socks -device tun://"${tun_device}" -interface "${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
-      } > /dev/null
-    fi
+    tun2socks -device tun://"${tun_device}" -interface "${tun_device}" -proxy socks5://localhost:"${socks5_port}" -loglevel silent &
 
     if [[ "${expert}" = true ]]; then
       source /etc/socksify-me/expert-start
@@ -227,11 +201,7 @@ case "${command}" in
   stop)
     source /run/socksify-me/{env,net_device,default_gateway_ipv4,default_gateway_ipv6}
 
-    if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
-      killall badvpn-tun2socks
-    else
-      killall tun2socks
-    fi
+    killall tun2socks
 
     if [[ "${exclude_method}" = ip ]]; then
       ip -4 route del "${server_ipv4}" dev "${net_device}" via "${default_gateway_ipv4}" metric 5
