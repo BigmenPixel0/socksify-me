@@ -175,22 +175,6 @@ case "${command}" in
     fi
     ip link set "${tun_device}" up
 
-    if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
-      if [[ "${disable_ipv6}" != true ]]; then
-        {
-          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-ip6addr "${tun2socks_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
-        } > /dev/null
-      else
-        {
-          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
-        } > /dev/null
-      fi
-    else
-      {
-        tun2socks -device tun://"${tun_device}" -interface "${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
-      } > /dev/null
-    fi
-
     if [[ "${exclude_method}" = ip ]]; then
       ip -4 route add "${server_ipv4}" dev "${net_device}" via "${default_gateway_ipv4}" metric 5
       if [[ "${disable_ipv6}" != true ]]; then
@@ -213,6 +197,22 @@ case "${command}" in
     ip -4 route add default via "${tun2socks_ipv4}" metric 6
     if [[ "${disable_ipv6}" != true ]]; then
       ip -6 route add default via "${tun2socks_ipv6}" metric 6
+    fi
+
+    if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
+      if [[ "${disable_ipv6}" != true ]]; then
+        {
+          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-ip6addr "${tun2socks_ipv6}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
+        } > /dev/null
+      else
+        {
+          badvpn-tun2socks --tundev "${tun_device}" --netif-ipaddr "${tun2socks_ipv4}" --netif-netmask 255.255.255.0 --socks-server-addr "localhost:${socks5_port}" &
+        } > /dev/null
+      fi
+    else
+      {
+        tun2socks -device tun://"${tun_device}" -interface "${tun_device}" -proxy socks5://localhost:"${socks5_port}" &
+      } > /dev/null
     fi
 
     if [[ "${expert}" = true ]]; then
