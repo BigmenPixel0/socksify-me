@@ -139,6 +139,11 @@ tun2socks_ipv6="fdfe:dcba:9876::2"
 
 case "${command}" in
   start)
+    if [[ -n "$(pgrep tun2socks)" ]]; then
+      echo "tun2socks is already running"
+      exit 0
+    fi
+
     if [[ -z "${exclude_method}" || -z "${socks5_port}" || -z "${net_device}" ]]; then
       help
       exit 1
