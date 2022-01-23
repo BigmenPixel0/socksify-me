@@ -156,13 +156,17 @@ case "${command}" in
     fi
 
     mkdir -p /run/socksify-me
-    echo "default_gateway_ipv4=${default_gateway_ipv4}" > /run/socksify-me/env
-    echo "default_gateway_ipv6=${default_gateway_ipv6}" >> /run/socksify-me/env
+    if [[ "${default_gateway_ipv4}" != "${tun2socks_ipv4}" ]]; then
+      echo "default_gateway_ipv4=${default_gateway_ipv4}" > /run/socksify-me/default_gateway_ipv4
+    fi
+    if [[ "${default_gateway_ipv6}" != "${tun2socks_ipv6}" ]]; then
+      echo "default_gateway_ipv6=${default_gateway_ipv6}" > /run/socksify-me/default_gateway_ipv6
+    fi
     echo "exclude_method=${exclude_method}" >> /run/socksify-me/env
     if [[ "${net_device}" != "${tun_device}" ]]; then
       echo "net_device=${net_device}" > /run/socksify-me/net_device
     fi
-    echo "socks5_port=${socks5_port}" >>/run/socksify-me/env
+    echo "socks5_port=${socks5_port}" > /run/socksify-me/env
     echo "uid=${uid}" >> /run/socksify-me/env
     echo "server_ipv4=${server_ipv4}" >> /run/socksify-me/env
     echo "server_ipv6=${server_ipv6}" >> /run/socksify-me/env
@@ -225,6 +229,8 @@ case "${command}" in
   stop)
     source /run/socksify-me/env
     source /run/socksify-me/net_device
+    source /run/socksify-me/default_gateway_ipv4
+    source /run/socksify-me/default_gateway_ipv6
 
     if [[ "${tun2socks_backend}" = badvpn-tun2socks ]]; then
       killall badvpn-tun2socks
