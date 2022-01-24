@@ -4,6 +4,7 @@
 * Full IPv4 and IPv6 support.
 * Support for exclusion by UID method.
 * Support for exclusion method by server IP address.
+* Support for custom scripts after start/stop.
 * Easy integration with NetworkManager-dispatcher.
 * Maybe more...
 
@@ -11,7 +12,7 @@
 * iproute2
 * [tun2socks](https://github.com/xjasonlyu/tun2socks)
 * badvpn (optional, for badvpn-tun2socks backend)
-
+* 
 ## Installation
 If you are using ArchLinux then:
 
