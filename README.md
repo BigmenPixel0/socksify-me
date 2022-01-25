@@ -78,13 +78,9 @@ Make sure you have enabled `NetworkManager-dispatcher.service`:
 ```
 $ sudo systemctl enable NetworkManager-dispatcher.service
 ```
-## --uid or --server-ipv4/6?
-The `--uid` option is more flexible because all traffic of the selected user will be excluded from the proxy (for example, so that your socks5 client can easily connect to a domain with a changing IP address). It is necessary to run the socks5 client as the selected user.
 
-The `--server-ipv4/6` option is simpler, you only need to enter the IP address of your socks5 server, but this will not work with a domain that has IP addresses that change or with TOR.
-
-## --expert option
-True or false. If true, then after starting/stopping socksify-me, commands from /etc/socksify-me/expert-start and /etc/socksify-me/expert-stop files will be run.
+## Options
+See [here](https://github.com/BigmenPixel0/socksify-me/wiki/Options).
 
 ## Credits
 * Thanks to [tun2socks](https://github.com/xjasonlyu/tun2socks) developers.
