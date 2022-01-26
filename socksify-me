@@ -133,9 +133,9 @@ fi
 
 tun_device="tun0"
 tun_ipv4="10.0.0.1"
-tun_ipv6="fdfe:dcba:9876::1"
+tun_ipv6="2001:8b0:2c1:4b50::1"
 tun2socks_ipv4="10.0.0.2"
-tun2socks_ipv6="fdfe:dcba:9876::2"
+tun2socks_ipv6="2001:8b0:2c1:4b50::2"
 
 case "${command}" in
   start)
