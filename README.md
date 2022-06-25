@@ -83,4 +83,4 @@ $ sudo systemctl enable NetworkManager-dispatcher.service
 See [here](https://github.com/BigmenPixel0/socksify-me/wiki/Options).
 
 ## Credits
-* Thanks to [tun2socks](https://github.com/xjasonlyu/tun2socks) developers.
+Thanks to [tun2socks](https://github.com/xjasonlyu/tun2socks) developers.
